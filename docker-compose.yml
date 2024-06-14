@@ -1,0 +1,49 @@
+version: '3.5'
+networks:
+  laravel4logistics:
+services:
+  nginx4logistics:
+    image: nginx:stable-alpine
+    container_name: nginxwe4logistics
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./nginx/default3.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php4logistics
+      - mysql4logistics
+    networks:
+      - laravel4logistics
+  mysql4logistics:
+    image: mysql:8.0
+    container_name: mysql4logistics
+    restart: unless-stopped
+    tty: true
+    ports:
+        - "4306:3306"
+    volumes:
+      - ./mysql_files:/var/lib/mysql
+
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - laravel4logistics
+  php4logistics:
+    build:
+      context: .
+      dockerfile: Dockerfile #use the Dockerfile created earlier to build the image for this container 
+    container_name: php4logistics
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "9000:9000"
+    depends_on:
+      - mysql4logistics
+    networks:
+      - laravel4logistics
